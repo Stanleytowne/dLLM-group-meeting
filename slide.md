@@ -399,10 +399,6 @@ llada这个文章没什么好讲的，他就是第一个把dllm scale到8b的模
 
 ## LLaDA
 
-<!-- <div class="long-image-scroller" style="width: 80%; height: 50vh;">
-    <img src="images/53792098d8263d12cc8efc6a1561be66bcc7444effdda7a318cf902d26d9e56a.png">
-</div> -->
-
 ![w:750](images/53792098d8263d12cc8efc6a1561be66bcc7444effdda7a318cf902d26d9e56a.png)
 
 
@@ -480,7 +476,7 @@ dream直接用一个qwen来初始化
 
 ## Dream
 
-<div class="long-image-scroller" style="width: 80%; height: 50vh;">
+<div class="long-image-scroller" style="width: 80%; height: 30rem;">
     <img src="images/6f9f7537f4798c8eb060ed826148d0f20a9995f1d6027d6a5fae631cce32eae7.png">
 </div>
 
@@ -562,7 +558,7 @@ Try [mercury coder](https://chat.inceptionlabs.ai/) to get a feel!
 3. Self error correction
     - LLaDA / Dream: no such ability natively.
 
-<div class="long-image-scroller" style="width: 80%; height: 35vh;">
+<div class="long-image-scroller" style="width: 80%; height: 20rem;">
     <img src="images/4ed92b173d9c35190c012b10d6808a53d1e074fb7da53e18d9c0252c8fe66c2f.png">
 </div>
 
@@ -705,7 +701,7 @@ $$
 
 Results
 
-<div class="long-image-scroller" style="width: 100%; height: 40vh;">
+<div class="long-image-scroller" style="width: 100%; height: 25rem;">
     <img src="images/a3c28a04cb5804f3dd3ae0413dcc91acdf673b3b278f6a4a56b46267c08cb91c.png">
 </div>
 
@@ -723,7 +719,7 @@ ul {
 
 - Goal: introduce KV cache mechanism tailored for bidirectional attention.
 - Observation: KV exhibit high similarity across adjacent steps
-<div class="long-image-scroller" style="width: 74%; height: 30vh;">
+<div class="long-image-scroller" style="width: 74%; height: 17.8rem;">
     <img src="images/209dd8dba68e0cec391a73a6e91ad0d5d6801204c49cb59d021d52de6b591f75.png">
 </div>
 
@@ -736,7 +732,7 @@ work done by nvidia
 
 ## Fast-dLLM
 
-<div class="long-image-scroller" style="width: 100%; height: 40vh;">
+<div class="long-image-scroller" style="width: 100%; height: 25rem;">
     <img src="images/0823271c9637e27f307fa5e31411343d6183c2d31205e7a07540a2eb31df7290.png">
 </div>
 
@@ -745,7 +741,7 @@ work done by nvidia
 
 ## Fast-dLLM
 
-<div class="long-image-scroller" style="width: 100%; height: 50vh;">
+<div class="long-image-scroller" style="width: 100%; height: 30rem;">
     <img src="images/844056679e1f35613b9d63d8858be1a32a7db49cb12779b1776ffa09e072509b.png">
 </div>
 
@@ -862,7 +858,7 @@ ul {
 </style>
 
 - Weight scheme: $w_t(x_t, x_0)$ grows exponentially when $t\to 0 / 1$
-<div class="long-image-scroller" style="width: 60%; height: 38vh;">
+<div class="long-image-scroller" style="width: 60%; height: 24rem;">
     <img src="images/39dd8ef61048b0a19cd47c0ca7536cc7814e54b4bb41b0d0f162cf2c4ee18da7.png">
 </div>
 
@@ -880,7 +876,7 @@ This can be problematic since these low/high noise samples provide little to no 
 ## GIDD
 
 - Results
-<div class="long-image-scroller" style="width: 100%; height: 38vh;">
+<div class="long-image-scroller" style="width: 100%; height: 24rem;">
     <img src="images/e73d361a97bb51c18bee05a15422e792002322e40ddc8c182a89cd82ffb15266.png">
 </div>
 
@@ -912,7 +908,7 @@ This can be problematic since these low/high noise samples provide little to no 
 
 - Block diffusion: auto-regressive over blocks; diffusion within blocks
 
-<div class="long-image-scroller" style="width: 80%; height: 35vh;">
+<div class="long-image-scroller" style="width: 80%; height: 23rem;">
     <img src="images/2f98f0bd784c8e4574413fe77d194332a6da8fb29db84a2d713628ebd27768c5.png">
 </div>
 
@@ -991,7 +987,7 @@ mdlm只有在token是mask的时候才计算loss，所以其实即使l'=1，也�
 
 ## DAEDAL
 
-<div class="long-image-scroller" style="width: 100%; height: 27vh;">
+<div class="long-image-scroller" style="width: 100%; height: 17rem;">
     <img src="images/5bb0fd0b56591483eecc8a4677951fdc65693e3ee9f442f4ad60f4ccd96ba9c9.png">
 </div>
 
@@ -1010,14 +1006,14 @@ ul {
 - Initial length adjustment: expand generation length until EOS confidence surpasses a certain threshold
 - Iterative mask insertion: during denoising, the masked position with exceptionally low confidence is replaced with multiply masks(mask expansion)
 
-<div class="long-image-scroller" style="width: 90%; height: 23vh;">
+<div class="long-image-scroller" style="width: 90%; height: 14.5rem;">
     <img src="images/1d797b58aab59145e9217061a4df3657116faec93f7ba85c47bd4281efef8830.png">
 </div>
 
 
 ## DAEDAL
 
-<div class="long-image-scroller" style="width: 100%; height: 45vh;">
+<div class="long-image-scroller" style="width: 80%; height: 29.5rem;">
     <img src="images/317f2226fbd4eebd97ac8aa31ef41d6cb19e99d10327f91635e4e7311c82fd1a.png">
 </div>
 
