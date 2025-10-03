@@ -2,18 +2,18 @@
 marp: true
 theme: gaia
 paginate: true
-headingDivider: 3
+headingDivider: 2
 backgroundColor: white
 math: MathJax
 transition: fade
 style: |
-  /* Define the style of "morph" class */
-  .morph {
-    display: inline-block;
-    view-transition-name: var(--morph-name);
-    contain: layout;
-    vertical-align: top;
-  }
+    /* Define the style of "morph" class */
+    .morph {
+        display: inline-block;
+        view-transition-name: var(--morph-name);
+        contain: layout;
+        vertical-align: top;
+    }
 
 auther: Pingzhi Tang
 ---
@@ -98,7 +98,7 @@ li {
 - Why dLLM?
     - i.e., what's wrong with autoregressive LLMs and what are the potential benefits of dLLM?
 - dLLM (MDLM) recap
-- State-of-the-art dLLMs, both open-source and closed-source
+- State-of-the-art dLLMs: open / closed-source
 - Drawbacks of the current dLLMs(MDLMs)
 - dLLM unchained
     - Reclaiming Parallelism, Revision, and Memory from MDLM.
@@ -613,6 +613,13 @@ Dynamic length generation
 -->
 
 
+## Inference speedup / Parallel decoding
+<!-- _class: lead -->
+Entropy Bounded Unmasking (EB-Sampler) by FAIR lab, Meta
+Fast-dLLM by NVIDIA
+
+
+
 ## Entropy Bounded Unmasking (EB-Sampler)
 
 <!-- footer: Ben-Hamu et al., [alphaxiv](https://www.alphaxiv.org/abs/2505.24857) -->
@@ -746,6 +753,12 @@ work done by nvidia
 </div>
 
 
+## Self Error Correction
+<!-- _class: lead -->
+Edit-based Forward Process in Seed Diffusion
+GIDD (Generalized Interpolating Discrete Diffusion)
+
+
 ## Edit-based Forward Process in Seed Diffusion
 
 <style scoped>
@@ -783,7 +796,7 @@ To introduce revision ability, they propose a two-stage curriculum for robust di
     $$
 
 
-## Generalized Interpolating Discrete Diffusion (GIDD)
+## GIDD (Generalized Interpolating Discrete Diffusion)
 
 <!-- footer: Rütte et al., [alphaxiv](https://www.alphaxiv.org/abs/2503.04482) -->
 
@@ -900,6 +913,12 @@ This can be problematic since these low/high noise samples provide little to no 
 还是原来的老问题，加上uniform效果会变差
 但是我有点不清楚这里他是怎么测试的，是否有修改的阶段，这不是很之前的结论矛盾吗
 -->
+
+
+## Dynamic Length Generation
+<!-- _class: lead -->
+Block Diffusion
+DAEDAL (Dynamic Adaptive Length Expansion for dLLMs)
 
 
 ## Block Diffusion
