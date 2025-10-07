@@ -648,7 +648,7 @@ Fast-dLLM by NVIDIA
 
 - For the optimal trained MDLM, the order of sequential unmasking will not change the underlying model distribution,
     $$
-    p_\sigma^\theta(\x_0) = p_{\sigma'}^\theta(\x_0), \forall \sigma, \sigma'.
+    p_\sigma^\theta(\x_0) = p_{\sigma'}^\theta(\x_0), \forall \text{ unmasking order } \sigma, \sigma'.
     $$
 - However, in practice, the unmasking order matters.
 
@@ -691,7 +691,7 @@ ul {
 </style>
 
 - However, top-k sampling is not enough.
-<div class="long-image-scroller" style="width: 43%; height: 20rem;">
+<div class="long-image-scroller" style="width: 43%; height: 20.5rem;">
     <img src="images/117afdd5f9824059365e0937466a0e4fd4e33764d2aaf7b5c6092eb5894cd1af.png">
 </div>
 
@@ -710,12 +710,12 @@ eb-sampler文章里提出，这是因为top-k只考虑了单个token的confidenc
 ## EB-Sampler
 
 - Our goal: 
-    $$\min\KL(q(x), p_{\phi}(x))$$
+    $$\min_\phi\KL(q(x) \| p_{\phi}(x))$$
 
-- According to [**Data Processing Inequality**](#data-processing-inequality), the KL divergence between two marginals is smaller or equal than the joint distributions:
-    $$\KL(q(x), p_{\phi}(x)) \leq \KL(q_{\phi}(x,z), p_{\phi}(x,z))$$
-    - $z = (z_1, \dots, z_d)$ is an ordered partition of $\mathcal{I} = \{1, \dots, N\}$
-    - $\phi(z_i | x^{z_{<i}}, z_{<i})$ is a sequencing function that predicts the distribution of $z_i$ given $x^{z_{<i}}$ and $z_{<i}$.
+- According to [**Data Processing Inequality**](#data-processing-inequality), the KL divergence between two marginals is no larger than the joint distributions:
+    $$\KL(q(x) \| p_{\phi}(x)) \leq \KL(q_{\phi}(x,z) \| p_{\phi}(x,z))$$
+    - $z = (z_1, \dots, z_d)$ is an ordered partition of $\mathcal{I} = \{1, \dots, N\}$,
+    - $\phi(z_i | x^{z_{<i}}, z_{<i})$ is a sequencing function that determines the unmasking order.
 
 
 ## EB-Sampler
@@ -725,28 +725,58 @@ eb-sampler文章里提出，这是因为top-k只考虑了单个token的confidenc
     \begin{gather}
     p_{\phi}(x, z) = \prod_{i=1}^d p_{\phi}(z_i, x^{z_i} | x^{z_{<i}}, z_{<i}) = \prod_{i=1}^d \left(\prod_{l \in z_i} p^{\theta}(x^l | x^{z_{<i}})\right) \phi(z_i | x^{z_{<i}}, z_{<i}) \\
     q_{\phi}(x, z) = \prod_{i=1}^d q(z_i, x^{z_i} | x^{z_{<i}}, z_{<i}) = \prod_{i=1}^d q(x^{z_i} | x^{z_{<i}}) \phi(z_i | x^{z_{<i}}, z_{<i})
-    \overset{*}{=} q(x) \phi(z | x)
+    \overset{(*)}{=} q(x) \phi(z | x)
     \end{gather}
     $$
-- $*$ is because the product of the clean data conditionals does not depend on the order of unmasking.
+- $(*)$ is because the product of the clean data conditionals does not depend on the order of unmasking.
 
 
 ## EB-Sampler
 
+<style scoped>
+ul {
+    margin-top: 0rem;
+}
+</style>
+
 - Error decomposition
     $$
     \begin{align}
-    \KL(q(x), p_{\phi}(x)) &\leq \KL(q_{\phi}(x,z), p_{\phi}(x,z)) = \sum_{i=1}^d \E_{q_{\phi}}[\ln q(x^{z_i} | x^{z_{<i}}) - \sum_{l \in z^i} \ln p^{\theta}(x^l | x^{z_{<i}})] \\
-    &= \sum_{i=1}^d \E_{q_{\phi}}[\underbrace{\sum_{l \in z_i} \KL(q(x^l | x^{z_{<i}}), p^{\theta}(x^l | x^{z_{<i}}))}_{\text{model error}} + \underbrace{\KL(q(x^{z_i} | x^{z_{<i}}), \prod_{l \in z_i}q(x^l | x^{z_{<i}}))}_{\text{joint dependence error}}]
+    \KL(q(x) \| p_{\phi}(x)) &\leq \KL(q_{\phi}(x,z) \| p_{\phi}(x,z)) = \sum_{i=1}^d \E_{q_{\phi}}[\ln q(x^{z_i} | x^{z_{<i}}) - \sum_{l \in z^i} \ln p^{\theta}(x^l | x^{z_{<i}})] \\
+    &= \sum_{i=1}^d \E_{q_{\phi}}[\underbrace{\sum_{l \in z_i} \KL(q(x^l | x^{z_{<i}}) \| p^{\theta}(x^l | x^{z_{<i}}))}_{\text{model error}} + \underbrace{\KL(q(x^{z_i} | x^{z_{<i}}) \| \prod_{l \in z_i}q(x^l | x^{z_{<i}}))}_{\text{joint dependence error}}]
     \end{align}
     $$
+- ***Model error*** comes from sampling incorrect conditionals $p^\theta$ that do not match the data distribution.
+- ***Joint dependence error*** comes from sampling tokens independently that are not actually independent in $q$.
+
+<!-- 
+这里第一个式子的第二个等号的推导略去了
+但是可以很容易的大概想到，是同时加上减去一项\prod q(x^l | x^{z_{<i}})
+-->
+
+
+## EB-Sampler
+
 - The joint dependence error is upper-bounded by
     $$
     \begin{aligned}
-    \KL(q(x^{z_i} | x^{z_{<i}}), \prod_{l \in z_i}q(x^l | x^{z_{<i}})) &\leq \sum_{l \in z_i} H(q(x^l | x^{z_{<i}})) - \max_{l \in z_i} H(q(x^l | x^{z_{<i}})) \\
-    &\approx \sum_{l \in z_i} H(p^{\theta}(x^l | x^{z_{<i}})) - \max_{l \in z_i} H(p^{\theta}(x^l | x^{z_{<i}}))
+    \KL(q(x^{z_i} | x^{z_{<i}}) \| \prod_{l \in z_i}q(x^l | x^{z_{<i}})) &= \sum_{l \in z_i} H(q(x^l | x^{z_{<i}})) - H(q(x^{z_i} | x^{z_{<i}}))
+    \\
+    &\overset{(*)}{\leq} \sum_{l \in z_i} H(q(x^l | x^{z_{<i}})) - \max_{l \in z_i} H(q(x^l | x^{z_{<i}}))
     \end{aligned}
     $$
+    - $(*)$ is because that joint entropy is always larger or equal to marginal entropy ($H(X, Y) = H(X) + H(Y | X) \geq H(X)$).
+
+
+## EB-Sampler
+
+- Choosing $\phi$ given a pretrained model
+    - Assume we can identify low model error tokens using aforementioned error proxies and we design $\phi$ to only select $z_i$ from such tokens, where $p^\theta (x^l | x^{z_{<i}}) \approx q(x^l | x^{z_{<i}}), \forall l \in z_i$. 
+    - Then model error is negligible and joint dependence error is approximately upper-bounded by
+        $$
+        \sum_{l \in z_i} H(q(x^l | x^{z_{<i}})) - H(q(x^{z_i} | x^{z_{<i}}))
+        \approx \sum_{l \in z_i} H(p^{\theta}(x^l | x^{z_{<i}})) - \max_{l \in z_i} H(p^{\theta}(x^l | x^{z_{<i}}))
+        $$
 
 
 ## EB-Sampler
@@ -761,11 +791,7 @@ eb-sampler文章里提出，这是因为top-k只考虑了单个token的confidenc
 
 ## EB-Sampler
 
-Results
-
-<div class="long-image-scroller" style="width: 100%; height: 25rem;">
-    <img src="images/a3c28a04cb5804f3dd3ae0413dcc91acdf673b3b278f6a4a56b46267c08cb91c.png">
-</div>
+![w:900](images/a3c28a04cb5804f3dd3ae0413dcc91acdf673b3b278f6a4a56b46267c08cb91c.png)
 
 
 ## Fast-dLLM
