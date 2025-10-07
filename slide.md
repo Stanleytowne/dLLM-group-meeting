@@ -58,7 +58,7 @@ img {
 
 
 <!-- _class: lead -->
-# <!-- fit --><span class="morph" style="--morph-name:dllm;">dLLM Unchained</span>
+# <!-- fit --><span class="morph" style="--morph-name:dllm;">dLM Unchained</span>
 #### Reclaiming Parallelism, Revision, and Memory from MDLM.
 
 
@@ -75,6 +75,7 @@ $$
 \newcommand{\C}{\mathbb{C}}
 \newcommand{\E}{\mathbb{E}}
 \newcommand{\x}{\boldsymbol{x}}
+\newcommand{\z}{\boldsymbol{z}}
 \newcommand{\p}{\boldsymbol{p}}
 \newcommand{\e}{\boldsymbol{e}}
 \newcommand{\Q}{\boldsymbol{Q}}
@@ -95,12 +96,12 @@ li {
    font-size: 1rem;
 }
 </style>
-- Why dLLM?
-    - i.e., what's wrong with autoregressive LLMs and what are the potential benefits of dLLM?
-- dLLM (MDLM) recap
+- Why dLM?
+    - i.e., what's wrong with autoregressive LLMs and what are the potential benefits of dLLMs?
+- dLM (MDLM) recap
 - State-of-the-art dLLMs: open / closed-source
 - Drawbacks of the current dLLMs(MDLMs)
-- dLLM unchained
+- dLM unchained
     - Reclaiming Parallelism, Revision, and Memory from MDLM.
 
 <!-- 
@@ -115,33 +116,37 @@ li {
 <!-- footer: '' -->
 
 
-# <!-- _class: lead -->Why dLLM?
+# <!-- _class: lead -->Why dLM?
 
-## Why dLLM?
+## Why dLM?
 Autoregressive Modeling: Downsides
 - Tokens generated from left to right, one by one.
     - Limited parallelism leads to low utilization of GPUs.
-    - Prevents useful, novel generation styles like **infilling** (?)
+    - Prevents useful, novel generation styles like **infilling**.
     - Tends to degenerate and accumulate errors as the sequence length increases. (Sampling "drifts" by Yann LeCun)
-    - Not a reasonable bias for some tasks (Sudoku?)
+    - Not a reasonable bias for some tasks (e.g. [Sudoku](#dream-4)).
     - Reversal curse. 
 
 <!-- 
 从左往右的生成方式可能对于general的语言来说是一个比较合理的inductive bias
 但是其实是相当硬件不友好的
 同时也不适合填空，不过这一点其实我现在有点怀疑这是否是一个问题，因为大模型其实可以前后文都给他，他也可以实现很好的填空；反而是diffusion这种方式，要填多少个词/多少个token其实是很难确定的，因为词和token并不是1:1的
-对于general的语言或者spoken language来说，从左往右是合理的，但是会不会有一些其他的任务可能是不合适的
+对于general的语言或者spoken language来说，从左往右是合理的，但是会不会有一些其他的任务可能是不合适的, 比如大家在对比dlm和llm的时候经常会对比的一个指标就是数独，他的测试方法就是把一个n*n的数字序列输进去，ar-llm就只能顺序的生成
 最后一个是reversal curse，就是现在大模型的一个现象，就是很难给下句说上句，或者他知道a is b，但是你问他b is a，他就不知道了
 -->
 
-## Why dLLM?
-What we expect from a dLLM?
+
+## Why dLM?
+
+What we expect from a dLM?
 
 - Faster generation speed: multi-tokens generated at a time
 - More robust to errors with iterative refinement.
 - More flexible generation styles like infilling.
 - Full context awareness with bi-directional attention.
 - Control the generation quality with #steps of denoising (may be a better way for test-time compute?).
+- When high quality data becomes the bottleneck, dLM may provide better results. See [github](https://jinjieni.github.io/dlms-are-super-data-learners/resources/pdf/Diffusion_Language_Models_are_Super_Data_Learners.pdf).
+
 
 # <!-- _class: lead -->Discrete Diffusion Recap
 
@@ -168,6 +173,8 @@ d3pm对于任意的转移矩阵推导出来discrete diffusion的loss
 这里粗体的x表示one-hot编码，非粗体的x表示原始的离散变量
 cat是分类分布，这个分布可以分解为多个one-hot编码的加权和，每个类别的权重可以用p中的对应元素表示
 所以x的概率就是x^\top p
+
+离散和连续的区别就在，这个转移的kernel是一个矩阵，表示了从t-1步到t步任意两种状态之间的转移概率；为了计算的方便，往往这个矩阵是非常稀疏的，比如mask diffusion就是每一列只有两个地方的值不是0
 -->
 
 
@@ -199,15 +206,19 @@ cat是分类分布，这个分布可以分解为多个one-hot编码的加权和�
 
 <!-- 
 这里的loss就是标准的diffusion的loss，额外再加上一项
+
+上面的loss是标准的kl，其中的每一项我们刚刚都已经得到了；
+根据q的具体形式，我们可以把kl的式子化简一下；
+对于逆向过程的建模，他们的选择是建模x_t -> x_0
 -->
 
 ## MDLM (MD4)
 <style scoped>
 li {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
 }
 p {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     margin-top: 0.3rem;
 }
 ul {
@@ -222,21 +233,22 @@ For continuous time absorbing state diffusion, MD4 finds that the ELBO can be fu
     $$
     \begin{gather}
     \Q_i = (1 - \beta_i)\I + \beta_i \e_m \1^\top \\
-    \bar{\Q}_i = \prod_{j=1}^i Q_j = \alpha_i \I + (1 - \alpha_i) \1 \e_m^\top, \text{where } \alpha_i = \prod_{j=1}^i(1 - \beta_j)
+    \bar{\Q}_i = \prod_{j=1}^i \Q_j = \alpha_i \I + (1 - \alpha_i) \e_m \1^\top, \text{where } \alpha_i = \prod_{j=1}^i(1 - \beta_j)
     \end{gather}
     $$
 - Continuous time limit: $t(i) = i / T, \beta(t(i)) = T\beta_i, T\to \infty$
     $$
-    \bar{\Q}(t) = \lim_{T\to\infty} \bar{Q}_i = \alpha_t \I + (1 - \alpha_t) \1 \e_m^\top, \text{where } \alpha_t = \exp\left(-\int_0^t\beta(s) \mathrm{d} s\right)
+    \bar{\Q}(t) = \lim_{T\to\infty} \bar{Q}_i = \alpha_t \I + (1 - \alpha_t) \e_m \1^\top, \text{where } \alpha_t = \exp\left(-\int_0^t\beta(s) \mathrm{d} s\right)
     $$
+
 
 ## MDLM (MD4)
 <style scoped>
 li {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
 }
 p {
-    font-size: 0.8rem;
+    font-size: 0.9rem;
     margin-top: 0.3rem;
 }
 ul {
@@ -263,6 +275,8 @@ In continuous time absorbing state diffusion:
 - $\lim_{T \to \infty} \sum_{t=2}^T \L_{t-1} = \int_0^1 \frac{\alpha_t'}{1 - \alpha_t} \E_{q(x_t|x_0)} [\delta_{x_t, m} \log \widetilde{p}_{\theta}(x_0|x_t)] \mathrm{d} t$ is the weighted cross entropy loss on masked tokens.
 
 <!-- 
+这里不严格的说明一下
+
 在MD4和MDLM中，两个同期的工作发现
 在D3PM中效果最好的absorbing state dlm里，如果把时间建模成连续的
 那么diffusion很复杂的那个loss就化简成了一个weighted cross entropy loss
@@ -273,9 +287,10 @@ In continuous time absorbing state diffusion:
 如果t比较大，也就是noise比较大，这个去噪的难度就会比较大，所以我们就需要给更小的weight
 -->
 
+
 ## MDLM (MD4)
 
-For multi-dimensional data (sequence) $\x_t = (x_t^{(1)}, \ldots, x_t^{(N)})$, we select the forward process that can be factorized as:
+For multi-dimensional data (e.g. a sequence) $\x_t = (x_t^{(1)}, \ldots, x_t^{(N)})$, we select the forward process that can be factorized as:
 $$
 q(\x_t | \x_s) = \prod_{i=1}^N q(x_t^{(i)} | x_s^{(i)})
 $$
@@ -294,7 +309,6 @@ $$
 -->
 
 
-
 ## Why MDLM?
 
 1. Absorbing state dLMs perform the best, exceeding other counterparts like uniform diffusion.
@@ -302,6 +316,8 @@ $$
 ![w:1000](images/be59906ab2740771c6a6d1131ebcf5a9a1b7342d27b0f1cb08c5c7b7187aa8f6.png)  
 
 <!-- 
+前两次mys讲了这么多可能的dlm的建模方式，但是为什么我这里只写mdlm
+
 后面我们可以发现，现在几乎所有的开源模型都用了这个setting
 主要原因我们之前也看到了，absorbing state的效果好
 -->
@@ -340,6 +356,8 @@ ol {
 这里补充了一下md4中的一个小结论，具体的证明可以看md4的附录
 他这里证明了score-based model的concrete score function和mdlm是等价的
 但是用mdlm的话，保证了概率分布，多一个先验的约束，所以更好学
+
+虽然说mdlm有种种好处，但是其实他也有很多问题，之后可以看到
 -->
 
 
@@ -354,6 +372,7 @@ li {
 }
 p {
     font-size: 0.9rem;
+    margin-top: 0.2rem;
 }
 ul {
     margin-top: 0;
@@ -366,9 +385,9 @@ Open-source:
 - [SDAR](https://github.com/JetAstra/SDAR) series from Shanghai AI Lab: 1.7B, 4B, 8B, 30B-A3B MoE, technical report to be released.
 
 Closed-source:
-- [Mercury Coder](https://chat.inceptionlabs.ai/): closed-source with brief technical [report](https://www.alphaxiv.org/pdf/2506.17298).
+- [Mercury Coder](https://chat.inceptionlabs.ai/): closed-source with a brief technical [report](https://www.alphaxiv.org/pdf/2506.17298).
 - [Gemini Diffusion](https://deepmind.google/models/gemini-diffusion/): no technical details.
-- [Seed Diffusion](https://www.alphaxiv.org/abs/2508.02193): closed-source with brief technical report, < 15B.
+- [Seed Diffusion](https://www.alphaxiv.org/abs/2508.02193): closed-source with a brief technical report, < 15B.
 
 <!-- 
 这里是所有主流的开源和闭源模型
@@ -437,6 +456,8 @@ llada 1.5是在llada的基础上做了rl
 
 ## Dream 
 
+<!-- footer: Ye et al., [alphaxiv](https://www.alphaxiv.org/html/2508.15487) -->
+
 - AR-based LLM Initialization
 
 ![w:700](images/ff67b15629303e28325a66e7b69e8d8d9570b5bed94ea4d9edea080645983cae.png)  
@@ -456,13 +477,13 @@ dream直接用一个qwen来初始化
 
 - Generalized MDLM loss:
     $$
-    \L = -\E_{\x_0\sim q(\cdot), t\sim \mathcal{U}(0, 1), \x_t \sim q(\cdot|x_0)} \sum_{n=1}^N \1_{[x_t^{(n)} =\text{MASK}]} w(t, \x_t, n)
+    \L = -\E_{\x_0\sim q(\cdot), t\sim \mathcal{U}(0, 1), \x_t \sim q(\cdot|x_0)} \sum_{n=1}^N w(t, \x_t, n) \delta_{x_t^{(n)}, m}
     \log \widetilde{p}_{\theta}(x_0^{(n)} | \x_t)
     $$
 - Define $w(t, \x_t, n)$ to quantify the information contribution of each clean token related to the masked token.
     $$
     w(t, \x_t, n) = \frac 1 2 \sum_{i=1}^N 
-    \1_{[x_t^{(i)} \neq \text{MASK}]}
+    (1 - \delta_{x_t^{(n)}, m})
     \geo(p, |n - i| - 1)
     $$
 
@@ -482,6 +503,8 @@ dream直接用一个qwen来初始化
 
 
 ## Dream
+
+<!-- _footer: Ye et al., [alphaxiv](https://www.alphaxiv.org/html/2508.15487), [back](#why-dlm-1) -->
 
 - Planning ability of the model
 ![w:800](images/18973c0eb71c6cb886ebdc0e4be43480892694231914c86d059a160eebd6bb38.png)  
@@ -601,7 +624,7 @@ ol {
 </center>
 
 
-# <!-- _class: lead -->dLLM Unchained
+# <!-- _class: lead -->dLM Unchained
 
 Inference speedup / Parallel decoding
 Self error correction
@@ -619,38 +642,46 @@ Entropy Bounded Unmasking (EB-Sampler) by FAIR lab, Meta
 Fast-dLLM by NVIDIA
 
 
-
 ## Entropy Bounded Unmasking (EB-Sampler)
 
 <!-- footer: Ben-Hamu et al., [alphaxiv](https://www.alphaxiv.org/abs/2505.24857) -->
 
 - For the optimal trained MDLM, the order of sequential unmasking will not change the underlying model distribution,
     $$
-    p_\sigma^\theta(x) = p_{\sigma'}^\theta(x), \forall \sigma, \sigma'.
+    p_\sigma^\theta(\x_0) = p_{\sigma'}^\theta(\x_0), \forall \sigma, \sigma'.
     $$
 - However, in practice, the unmasking order matters.
 
 ![bg right:30% w:400](images/b199776870bc29f0dd4ed09e007355997421a5f8676e300fe555dadb5617cda4.png)  
 
-<!-- work done by fair lab, meta -->
+<!-- 
+对于一个perfect的mdlm，因为在训练的时候他被训练了任意顺序的masking
+所以理论上任意的unmasking顺序不会改变p(x)
+但是显然，对于很多任务来说，有些顺序的生成会比另一些顺序要难的多
+例如可以看右图，对于llada来说，某些生成顺序测试的效果会好很多
+-->
 
 
-## Entropy Bounded Unmasking (EB-Sampler)
+## EB-Sampler
 
-- Emperical unmasking order criteria
+- Emperical unmasking order criteria: top-k samping
     $$
-    \small
     \begin{align}
         \text{confidence: } l &= {\arg\max}_{l' \in M} [\max_{x^{l'}} p^\theta(x^{l'} | x^{\bar{M}})] \\
         \text{entropy: } l &= {\arg\min}_{l' \in M} [H(X^{l'} | x^{\bar{M}})] \\
         \text{margin: } l &= {\arg\max}_{l' \in M} [p^\theta(X^{l'} = y_1 | x^{\bar{M}}) - p^\theta(X^{l'} = y_2 | x^{\bar{M}})]
     \end{align}
     $$
-- These criteria can serve as good local model error proxies.
+- These criteria can serve as good **local model error proxies**.
     - How confident the model is, i.e., how well it's trained
 
+<!-- 
+为什么这些criteria可以work？
+这篇文章的意思是，这些指标反映了模型对于特定位置生成这个值的确定性
+-->
 
-## Entropy Bounded Unmasking (EB-Sampler)
+
+## EB-Sampler
 
 <style scoped>
 ul {
@@ -660,41 +691,65 @@ ul {
 </style>
 
 - However, top-k sampling is not enough.
-![w:400](images/117afdd5f9824059365e0937466a0e4fd4e33764d2aaf7b5c6092eb5894cd1af.png)  
+<div class="long-image-scroller" style="width: 43%; height: 20rem;">
+    <img src="images/117afdd5f9824059365e0937466a0e4fd4e33764d2aaf7b5c6092eb5894cd1af.png">
+</div>
+
 * Ben-Hamu et al. argue that it is because top-k sampling ignores the **joint dependence error**.
 
+<!-- 
+我们之前看到这些top-k的方法可以提高准确性
+但是在parallel decoding的setting下，我们可以发现，当同时选择多个token来decode的时候，随着nfe的下降，模型性能急剧下降
 
-## Entropy Bounded Unmasking (EB-Sampler)
-
-An ordered partition $z = (z_1, \dots, z_d)$ of $\mathcal{I} = \{1, \dots, N\}$ 
-
-$$
-p_{\phi}(x, z) = \prod_{i=1}^d p_{\phi}(z_i, x^{z_i} | x^{z_{<i}}, z_{<i}) = \prod_{i=1}^d \left(\prod_{l \in z_i} p^{\theta}(x^l | x^{z_{<i}})\right) \phi(z_i | x^{z_{<i}}, z_{<i}).
-$$
-
-$$
-q_{\phi}(x, z) = \prod_{i=1}^d q(z_i, x^{z_i} | x^{z_{<i}}, z_{<i}) = \prod_{i=1}^d q(x^{z_i} | x^{z_{<i}}) \phi(z_i | x^{z_{<i}}, z_{<i})
-= q(x) \phi(z | x)
-$$
+eb-sampler文章里提出，这是因为top-k只考虑了单个token的confidence
+但是没有考虑token之前的相互作用
+模型完全有可能在两个位置同时很自信，但是这两个token是矛盾的
+-->
 
 
-## Entropy Bounded Unmasking (EB-Sampler)
+## EB-Sampler
 
-Error decomposition
-$$
-\begin{align}
-\KL(q(x), p_{\phi}(x)) &\leq \KL(q_{\phi}(x,z), p_{\phi}(x,z)) = \sum_{i=1}^d \E_{q_{\phi}}[\ln q(x^{z_i} | x^{z_{<i}}) - \sum_{l \in z^i} \ln p^{\theta}(x^l | x^{z_{<i}})] \\
-&= \sum_{i=1}^d \E_{q_{\phi}}[\underbrace{\sum_{l \in z_i} \KL(q(x^l | x^{z_{<i}}), p^{\theta}(x^l | x^{z_{<i}}))}_{\text{model error}} + \underbrace{\KL(q(x^{z_i} | x^{z_{<i}}), \prod_{l \in z_i}q(x^l | x^{z_{<i}}))}_{\text{joint dependence error}}]
-\end{align}
-$$
+- Our goal: 
+    $$\min\KL(q(x), p_{\phi}(x))$$
 
-The joint dependence error is upper-bounded by
-$$
-\KL(q(x^{z_i} | x^{z_{<i}}), \prod_{l \in z_i}q(x^l | x^{z_{<i}})) \leq \sum_{l \in z_i} H(q(x^l | x^{z_{<i}})) - \max_{l \in z_i} H(q(x^l | x^{z_{<i}})) \approx \sum_{l \in z_i} H(p^{\theta}(x^l | x^{z_{<i}})) - \max_{l \in z_i} H(p^{\theta}(x^l | x^{z_{<i}}))
-$$
+- According to [**Data Processing Inequality**](#data-processing-inequality), the KL divergence between two marginals is smaller or equal than the joint distributions:
+    $$\KL(q(x), p_{\phi}(x)) \leq \KL(q_{\phi}(x,z), p_{\phi}(x,z))$$
+    - $z = (z_1, \dots, z_d)$ is an ordered partition of $\mathcal{I} = \{1, \dots, N\}$
+    - $\phi(z_i | x^{z_{<i}}, z_{<i})$ is a sequencing function that predicts the distribution of $z_i$ given $x^{z_{<i}}$ and $z_{<i}$.
 
 
-## Entropy Bounded Unmasking (EB-Sampler)
+## EB-Sampler
+
+- $q_{\phi}(x,z), p_{\phi}(x,z)$ can be factorized as:
+    $$
+    \begin{gather}
+    p_{\phi}(x, z) = \prod_{i=1}^d p_{\phi}(z_i, x^{z_i} | x^{z_{<i}}, z_{<i}) = \prod_{i=1}^d \left(\prod_{l \in z_i} p^{\theta}(x^l | x^{z_{<i}})\right) \phi(z_i | x^{z_{<i}}, z_{<i}) \\
+    q_{\phi}(x, z) = \prod_{i=1}^d q(z_i, x^{z_i} | x^{z_{<i}}, z_{<i}) = \prod_{i=1}^d q(x^{z_i} | x^{z_{<i}}) \phi(z_i | x^{z_{<i}}, z_{<i})
+    \overset{*}{=} q(x) \phi(z | x)
+    \end{gather}
+    $$
+- $*$ is because the product of the clean data conditionals does not depend on the order of unmasking.
+
+
+## EB-Sampler
+
+- Error decomposition
+    $$
+    \begin{align}
+    \KL(q(x), p_{\phi}(x)) &\leq \KL(q_{\phi}(x,z), p_{\phi}(x,z)) = \sum_{i=1}^d \E_{q_{\phi}}[\ln q(x^{z_i} | x^{z_{<i}}) - \sum_{l \in z^i} \ln p^{\theta}(x^l | x^{z_{<i}})] \\
+    &= \sum_{i=1}^d \E_{q_{\phi}}[\underbrace{\sum_{l \in z_i} \KL(q(x^l | x^{z_{<i}}), p^{\theta}(x^l | x^{z_{<i}}))}_{\text{model error}} + \underbrace{\KL(q(x^{z_i} | x^{z_{<i}}), \prod_{l \in z_i}q(x^l | x^{z_{<i}}))}_{\text{joint dependence error}}]
+    \end{align}
+    $$
+- The joint dependence error is upper-bounded by
+    $$
+    \begin{aligned}
+    \KL(q(x^{z_i} | x^{z_{<i}}), \prod_{l \in z_i}q(x^l | x^{z_{<i}})) &\leq \sum_{l \in z_i} H(q(x^l | x^{z_{<i}})) - \max_{l \in z_i} H(q(x^l | x^{z_{<i}})) \\
+    &\approx \sum_{l \in z_i} H(p^{\theta}(x^l | x^{z_{<i}})) - \max_{l \in z_i} H(p^{\theta}(x^l | x^{z_{<i}}))
+    \end{aligned}
+    $$
+
+
+## EB-Sampler
 
 - Sample strategy
     - sorting unmasked tokens in ascending order on error proxy (confidence, entropy, margin) 
@@ -704,7 +759,7 @@ $$
     $$
 
 
-## Entropy Bounded Unmasking (EB-Sampler)
+## EB-Sampler
 
 Results
 
@@ -1040,5 +1095,21 @@ ul {
 # <!-- fit -->Thanks for Watching
 Pingzhi (Stanley) Tang
 stanleytang@stu.pku.edu.cn
-<!-- class: lead -->
+<!-- _class: lead -->
 <!-- footer: '' -->
+
+
+## Data Processing Inequality
+
+$$
+\begin{aligned}
+\KL(p(x, z) \| q(x, z)) &= \sum_x \sum_z p(x, z) \log \frac{p(x, z)}{q(x, z)} \\
+&= \sum_x \sum_z p(z | x) p(x) \log \frac{p(z | x) p(x)}{q(z | x) q(x)} \\
+&= \sum_x \sum_z p(z | x) p(x) \log \frac{p(x)}{q(x)} + \sum_x \sum_z p(z | x) p(x) \log \frac{p(z | x)}{q(z | x)} \\
+&= \KL(p(x) \| q(x)) + \E_{x}[\KL(p(z | x) \| q(z | x))] \\
+&\geq \KL(p(x) \| q(x))
+
+\end{aligned}
+$$
+
+[Back](#eb-sampler-2)
