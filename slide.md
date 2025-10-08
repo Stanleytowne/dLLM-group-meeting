@@ -51,9 +51,8 @@ style: |
 
 auther: Pingzhi Tang
 ---
-<style>
-</style>
 
+<!-- dLM Unchained: Unleashing Speed, Self-Correction, and Flexibility in Diffusion Language Models -->
 
 <!-- _class: lead -->
 # <!-- fit --><span class="morph" style="--morph-name:dllm;">dLM Unchained</span>
@@ -925,6 +924,14 @@ we give the fully denoised sample Zt0 to the model and sample the resulting dist
 
 为了增加额外的修改的scale过程，他们额外加了一个阶段
 -->
+
+
+## GIDD
+
+- Sampling
+
+![](https://github.com/dvruette/gidd/raw/main/animation.gif)
+
 
 ## GIDD
 
