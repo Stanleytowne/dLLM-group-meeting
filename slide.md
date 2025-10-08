@@ -14,46 +14,44 @@ style: |
         contain: layout;
         vertical-align: top;
     }
+    img {
+        display: block;
+        margin: auto;
+    }
+    .long-image-scroller {
+        width: 80%;
+        height: 70vh;
+
+        overflow-y: scroll;
+
+        margin: 15px auto;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background-color: #f8f8f8;
+    }
+    .long-image-scroller img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    .long-image-scroller::-webkit-scrollbar {
+        width: 8px;
+    }
+    .long-image-scroller::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 8px;
+    }
+    .long-image-scroller::-webkit-scrollbar-thumb {
+        background-color: #c1c1c1;
+        border-radius: 8px;
+    }
+    .long-image-scroller::-webkit-scrollbar-thumb:hover {
+        background-color: #a8a8a8;
+    }
 
 auther: Pingzhi Tang
 ---
 <style>
-img {
-    display: block;
-    margin: auto;
-}
-.long-image-scroller {
-    width: 80%;
-    height: 70vh;
-
-    overflow-y: scroll;
-
-    margin: 15px auto;
-    border-radius: 8px;
-    border: 1px solid #ddd;
-    background-color: #f8f8f8;
-}
-
-.long-image-scroller img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
-.long-image-scroller::-webkit-scrollbar {
-    width: 8px;
-}
-.long-image-scroller::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 8px;
-}
-.long-image-scroller::-webkit-scrollbar-thumb {
-    background-color: #c1c1c1;
-    border-radius: 8px;
-}
-.long-image-scroller::-webkit-scrollbar-thumb:hover {
-    background-color: #a8a8a8;
-}
 </style>
 
 
@@ -100,12 +98,12 @@ ul {
 }
 </style>
 
-- Why dLM?
+- <span class="morph" style="--morph-name:why-dlm;">Why dLM?</span>
     - i.e., what's wrong with autoregressive LLMs and what are the potential benefits of dLLMs?
 - dLM (MDLM) recap
 - State-of-the-art dLLMs: open / closed-source
 - Drawbacks of the current dLLMs(MDLMs)
-- **dLM unchained**
+- **<span class="morph" style="--morph-name:dllm;">dLM Unchained</span>**
     - Unleashing Speed, Self-Correction, and Flexibility in Diffusion Language Models.
 
 
@@ -121,9 +119,9 @@ ul {
 <!-- footer: '' -->
 
 
-# <!-- _class: lead -->Why dLM?
+# <!-- _class: lead --><span class="morph" style="--morph-name:why-dlm;">Why dLM?</span>
 
-## Why dLM?
+## <span class="morph" style="--morph-name:why-dlm;">Why dLM?</span>
 Autoregressive Modeling: Downsides
 - Tokens generated from left to right, one by one.
     - Limited parallelism leads to low utilization of GPUs.
@@ -293,7 +291,7 @@ In continuous time absorbing state diffusion:
 -->
 
 
-## MDLM (MD4)
+## <span class="morph" style="--morph-name:mdlm;">MDLM</span> (MD4)
 
 For multi-dimensional data (e.g. a sequence) $\x_t = (x_t^{(1)}, \ldots, x_t^{(N)})$, we select the forward process that can be factorized as:
 $$
@@ -314,7 +312,7 @@ $$
 -->
 
 
-## Why MDLM?
+## Why <span class="morph" style="--morph-name:mdlm;">MDLM</span>?
 
 1. Absorbing state dLMs perform the best, exceeding other counterparts like uniform diffusion.
 
@@ -366,10 +364,10 @@ ol {
 -->
 
 
-# <!-- _class: lead -->State-of-the-art dLLMs
+# <!-- _class: lead --><span class="morph" style="--morph-name:sota-dllms;">State-of-the-art dLLMs</span>
 <!-- footer: '' -->
 
-## State-of-the-art dLLMs
+## <span class="morph" style="--morph-name:sota-dllms;">State-of-the-art dLLMs</span>
 
 <style scoped>
 li {
@@ -385,7 +383,7 @@ ul {
 </style>
 
 Open-source:
-- LLaDA series from RUC: [LLaDA](https://www.alphaxiv.org/abs/2502.09992), [LLaDA-1.5](https://www.alphaxiv.org/pdf/2505.19223), [LLaDA-V](https://www.alphaxiv.org/pdf/2505.16933), [LLaDA-MoE](https://huggingface.co/inclusionAI/LLaDA-MoE-7B-A1B-Instruct)(7B-A1B)
+- <span class="morph" style="--morph-name:llada;">LLaDA</span> series from RUC: [LLaDA](https://www.alphaxiv.org/abs/2502.09992), [LLaDA-1.5](https://www.alphaxiv.org/pdf/2505.19223), [LLaDA-V](https://www.alphaxiv.org/pdf/2505.16933), [LLaDA-MoE](https://huggingface.co/inclusionAI/LLaDA-MoE-7B-A1B-Instruct)(7B-A1B)
 - Dream series from HKU: [Dream 7B](https://www.alphaxiv.org/html/2508.15487), [Dream-Coder](https://github.com/DreamLM/Dream-Coder), [DreamOn](https://github.com/DreamLM/DreamOn)
 - [SDAR](https://github.com/JetAstra/SDAR) series from Shanghai AI Lab: 1.7B, 4B, 8B, 30B-A3B MoE, technical report to be released.
 
@@ -407,7 +405,7 @@ Closed-source:
 
 -->
 
-## LLaDA
+## <span class="morph" style="--morph-name:llada;">LLaDA</span>
 
 <!-- footer: Nie et al., [alphaxiv](https://www.alphaxiv.org/abs/2502.09992) -->
 
@@ -631,7 +629,7 @@ ol {
 
 # <!-- _class: lead -->dLM Unchained
 
-Inference speedup / Parallel decoding
+<span class="morph" style="--morph-name:speedup;">Inference speedup / Parallel decoding</span>
 Self error correction
 Dynamic length generation
 
@@ -641,15 +639,15 @@ Dynamic length generation
 -->
 
 
-## Inference speedup / Parallel decoding
+## <span class="morph" style="--morph-name:speedup;">Inference speedup / Parallel decoding</span>
 <!-- _class: lead -->
-**Entropy Bounded Unmasking (EB-Sampler)**
+**<span class="morph" style="--morph-name:eb-sampler-full;">Entropy Bounded Unmasking</span> (<span class="morph" style="--morph-name:eb-sampler;">EB-Sampler</span>)**
 Fast-dLLM
 
 <!-- footer: Ben-Hamu et al., [alphaxiv](https://www.alphaxiv.org/abs/2505.24857) -->
 
 
-## Entropy Bounded Unmasking (EB-Sampler)
+## <span class="morph" style="--morph-name:eb-sampler-full;">Entropy Bounded Unmasking</span><br>(<span class="morph" style="--morph-name:eb-sampler;">EB-Sampler</span>)
 
 - For the optimal trained MDLM, the order of sequential unmasking will not change the underlying model distribution,
     $$
@@ -667,7 +665,7 @@ Fast-dLLM
 -->
 
 
-## EB-Sampler
+## <span class="morph" style="--morph-name:eb-sampler;">EB-Sampler</span>
 
 - Emperical unmasking order criteria: top-k samping
     $$
@@ -801,13 +799,13 @@ ul {
 
 ## Inference speedup / Parallel decoding
 <!-- _class: lead -->
-Entropy Bounded Unmasking (EB-Sampler)
-**Fast-dLLM**
+Entropy Bounded Unmasking (<span class="morph" style="--morph-name:eb-sampler;">EB-Sampler</span>)
+**<span class="morph" style="--morph-name:fast-dllm;">Fast-dLLM</span>**
 
 <!-- footer: Wu et al., [alphaxiv](https://www.alphaxiv.org/abs/2505.22618) -->
 
 
-## Fast-dLLM
+## <span class="morph" style="--morph-name:fast-dllm;">Fast-dLLM</span>
 
 <style scoped>
 ul {
@@ -849,7 +847,7 @@ fast-dllm的方法基于：当我们指定decode的顺序是block-wise，prompt�
 
 ## Self Error Correction
 <!-- _class: lead -->
-**Generalized Interpolating Discrete Diffusion (GIDD)**
+**<span class="morph" style="--morph-name:gidd-full;">Generalized Interpolating Discrete Diffusion</span> (<span class="morph" style="--morph-name:gidd;">GIDD</span>)**
 Edit-based Forward Process in Seed Diffusion
 
 <!-- footer: Rütte et al., [alphaxiv](https://www.alphaxiv.org/abs/2503.04482) -->
@@ -862,7 +860,7 @@ Edit-based Forward Process in Seed Diffusion
 -->
 
 
-## Generalized Interpolating Discrete Diffusion (GIDD)
+## <span class="morph" style="--morph-name:gidd-full;">Generalized Interpolating Discrete Diffusion</span> (<span class="morph" style="--morph-name:gidd;">GIDD</span>)
 
 - Interpolating absorbing-state diffusion with uniform diffusion:
     $$
@@ -884,7 +882,7 @@ Edit-based Forward Process in Seed Diffusion
 -->
 
 
-## GIDD
+## <span class="morph" style="--morph-name:gidd;">GIDD</span>
 
 - ELBO
     $$
@@ -984,13 +982,13 @@ entropy就是句子在词表的分布entropy
 
 ## Self Error Correction
 <!-- _class: lead -->
-Generalized Interpolating Discrete Diffusion (GIDD)
-**Edit-based Forward Process in Seed Diffusion**
+Generalized Interpolating Discrete Diffusion (<span class="morph" style="--morph-name:gidd;">GIDD</span>)
+**<span class="morph" style="--morph-name:seed;">Edit-based Forward Process in Seed Diffusion</span>**
 
 <!-- footer: ByteDance Seed et al., [alphaxiv](https://www.alphaxiv.org/abs/2508.02193) -->
 
 
-## Edit-based Forward Process in Seed Diffusion
+## <span class="morph" style="--morph-name:seed;">Edit-based Forward Process in Seed Diffusion</span>
 
 <style scoped>
 ol {
@@ -1039,13 +1037,13 @@ p {
 
 ## Dynamic Length Generation
 <!-- _class: lead -->
-**Block Diffusion**
+**<span class="morph" style="--morph-name:block-diffusion;">Block Diffusion</span>**
 Dynamic Adaptive Length Expansion for dLLMs (DAEDAL)
 
 <!-- footer: Arriola et al., [alphaxiv](https://www.alphaxiv.org/abs/2503.09573) -->
 
 
-## Block Diffusion
+## <span class="morph" style="--morph-name:block-diffusion;">Block Diffusion</span>
 
 - Block diffusion: auto-regressive over blocks; diffusion within blocks
 
@@ -1117,20 +1115,20 @@ mdlm只有在token是mask的时候才计算loss，所以其实即使l'=1，也�
 
 ## Dynamic Length Generation
 <!-- _class: lead -->
-Block Diffusion
-**Dynamic Adaptive Length Expansion for dLLMs (DAEDAL)**
+<span class="morph" style="--morph-name:block-diffusion;">Block Diffusion</span>
+**Dynamic Adaptive Length Expansion for dLLMs (<span class="morph" style="--morph-name:daedal;">DAEDAL</span>)**
 
 <!-- footer: Li et al., [alphaxiv](https://www.alphaxiv.org/abs/2508.00819) -->
 
 
-## Dynamic Adaptive Length Expansion for dLLMs (DAEDAL)
+## Dynamic Adaptive Length Expansion for dLLMs (<span class="morph" style="--morph-name:daedal;">DAEDAL</span>)
 
 - Training-free dynamic length generation
 - Can we predict the length of the generated sequence using the underlying information of the model?
     - Observation: in the first denoising step, the model confidently predicts more EOS from the fully masked sequence when the length is sufficient for the given task.
 
 
-## DAEDAL
+## <span class="morph" style="--morph-name:daedal;">DAEDAL</span>
 
 <div class="long-image-scroller" style="width: 100%; height: 17rem;">
     <img src="images/5bb0fd0b56591483eecc8a4677951fdc65693e3ee9f442f4ad60f4ccd96ba9c9.png">
