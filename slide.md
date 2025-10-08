@@ -59,10 +59,12 @@ img {
 
 <!-- _class: lead -->
 # <!-- fit --><span class="morph" style="--morph-name:dllm;">dLM Unchained</span>
-#### Reclaiming Parallelism, Revision, and Memory from MDLM.
+#### Unleashing Speed, Self-Correction, and Flexibility in Diffusion Language Models.
+
 
 
 Pingzhi (Stanley) Tang
+M$\mu$ Lab @ PKU
 stanleytang@stu.pku.edu.cn
 
 
@@ -91,18 +93,21 @@ $$
 
 
 # Table of Contents
+
 <style scoped>
-li {
-   font-size: 1rem;
+ul {
+    margin-top: 0
 }
 </style>
+
 - Why dLM?
     - i.e., what's wrong with autoregressive LLMs and what are the potential benefits of dLLMs?
 - dLM (MDLM) recap
 - State-of-the-art dLLMs: open / closed-source
 - Drawbacks of the current dLLMs(MDLMs)
-- dLM unchained
-    - Reclaiming Parallelism, Revision, and Memory from MDLM.
+- **dLM unchained**
+    - Unleashing Speed, Self-Correction, and Flexibility in Diffusion Language Models.
+
 
 <!-- 
 1. 明确一下为什么大家最近对 dLLM 这么感兴趣，dllm有什么可能的好处
@@ -638,13 +643,13 @@ Dynamic length generation
 
 ## Inference speedup / Parallel decoding
 <!-- _class: lead -->
-Entropy Bounded Unmasking (EB-Sampler) by FAIR lab, Meta
-Fast-dLLM by NVIDIA
+**Entropy Bounded Unmasking (EB-Sampler)**
+Fast-dLLM
+
+<!-- footer: Ben-Hamu et al., [alphaxiv](https://www.alphaxiv.org/abs/2505.24857) -->
 
 
 ## Entropy Bounded Unmasking (EB-Sampler)
-
-<!-- footer: Ben-Hamu et al., [alphaxiv](https://www.alphaxiv.org/abs/2505.24857) -->
 
 - For the optimal trained MDLM, the order of sequential unmasking will not change the underlying model distribution,
     $$
@@ -794,9 +799,15 @@ ul {
 ![w:900](images/a3c28a04cb5804f3dd3ae0413dcc91acdf673b3b278f6a4a56b46267c08cb91c.png)
 
 
-## Fast-dLLM
+## Inference speedup / Parallel decoding
+<!-- _class: lead -->
+Entropy Bounded Unmasking (EB-Sampler)
+**Fast-dLLM**
 
 <!-- footer: Wu et al., [alphaxiv](https://www.alphaxiv.org/abs/2505.22618) -->
+
+
+## Fast-dLLM
 
 <style scoped>
 ul {
@@ -806,15 +817,17 @@ ul {
 </style>
 
 - Goal: introduce KV cache mechanism tailored for bidirectional attention.
-- Observation: KV exhibit high similarity across adjacent steps
+- Observation: KV exhibit high similarity across adjacent steps during **block-wise decoding**
 <div class="long-image-scroller" style="width: 74%; height: 17.8rem;">
     <img src="images/209dd8dba68e0cec391a73a6e91ad0d5d6801204c49cb59d021d52de6b591f75.png">
 </div>
 
-* Block-wise decoding strategy
-
 <!-- 
-work done by nvidia
+dlm这样的双向注意力天然的不适合kv cache
+在每次decode的时候，都需要把所有的token都经过一次模型
+自然想到kvcache
+
+fast-dllm的方法基于：当我们指定decode的顺序是block-wise，prompt和suffix在block decode的时候变化小（见下一页的图）
 -->
 
 
@@ -836,54 +849,24 @@ work done by nvidia
 
 ## Self Error Correction
 <!-- _class: lead -->
+**Generalized Interpolating Discrete Diffusion (GIDD)**
 Edit-based Forward Process in Seed Diffusion
-GIDD (Generalized Interpolating Discrete Diffusion)
-
-
-## Edit-based Forward Process in Seed Diffusion
-
-<style scoped>
-ol {
-    margin-top: 0
-}
-p {
-    margin-top: 0
-}
-</style>
-
-<!-- footer: ByteDance Seed et al., [alphaxiv](https://www.alphaxiv.org/abs/2508.02193) -->
-
-To introduce revision ability, they propose a two-stage curriculum for robust diffusion training.
-1. Mask-based Forward Process: first 80% diffusion training steps, standard MDLM training.
-2. Edit-based Forward Process: last 20%, they add an extra edit-based corruption process.
-    - Sample $t$, calculate target #edits as $k_t = \lfloor |\x_0|\cdot \alpha_t\rfloor$
-    - Corrupt $\x_0$ with $k_t$ edits, $\x_t \sim q_{\mathrm{edit}}(\x_t | \x_0)$
-    - Edit operation set (e.g. substitutions, deletions(?), insertion(?))
-
-<!-- 
-这里的operation我实在是没懂insert和deletion是怎么搞的
--->
-
-
-## Edit-based Forward Process in Seed Diffusion
-
-- Original loss:
-    $$
-    \L =  -\mathbb{E}_{q_{\text{edit}},t} \log p_\theta(\mathbf{x}_0 | \mathbf{x}_t) -\mathbb{E}_{q_{\text{mask}}, t}\left[ \frac{\gamma_t^{'}}{\gamma_t} \sum_{i=1}^{|\mathbf{x}_0|} \mathbf{1}\left[\mathbf{x}_t[i]=\mathbf{m}\right] \log p_\theta\left(\mathbf{x}_0[i] \mid \mathbf{x}_t[i]\right)\right]
-    $$
-- Substituting the reconstruct loss with a denoised loss based on the edit-based forward process:
-    $$
-    \L =  -\mathbb{E}_{q_{\text{edit}},t} \log p_\theta(\mathbf{x}_0 | \mathbf{x}_t)  -\mathbb{E}_{q_{\text{mask}}, t}\left[ \frac{\gamma_t^{'}}{\gamma_t} \sum_{i=1}^{|\mathbf{x}_0|} \mathbf{1}\left[\mathbf{x}_t[i]=\mathbf{m}\right] \log p_\theta\left(\mathbf{x}_0[i] \mid \mathbf{x}_t[i]\right)\right]
-    $$
-
-
-## GIDD (Generalized Interpolating Discrete Diffusion)
 
 <!-- footer: Rütte et al., [alphaxiv](https://www.alphaxiv.org/abs/2503.04482) -->
 
+<!-- 
+做self correction，其实最直接的想法就是
+在forward的时候，看模型的confidence，然后把比较低的部分remask
+很多这样做，以及若干改进，lack理论依据
+在这里我们就不提了
+-->
+
+
+## Generalized Interpolating Discrete Diffusion (GIDD)
+
 - Interpolating absorbing-state diffusion with uniform diffusion:
     $$
-    q_t(x_t | x_0) = \cat(x_t; \alpha_t \x_0 + (1 - \alpha_t) \boldpi_t),
+    q_t(x_t | x_0) = \cat(x_t; \p = \alpha_t \x_0 + (1 - \alpha_t) \boldpi_t),
     $$
     where $\boldpi_t$ can be any probability distribution that changes smoothly over time.
 - Their choice of $\boldpi_t$:
@@ -907,15 +890,18 @@ To introduce revision ability, they propose a two-stage curriculum for robust di
     $$
     \begin{gather}
     -\log p(x_0) \leq
-    \E_{t, x_t, \widetilde{x}_0} \left[ w_t(x_t, x_0) \KL(q_t(\cdot | x_0) \| q_t(\cdot | \widetilde{x}_0)
-    + \underbrace{\frac{q_t(x_t | x_0)}{q_t(x_t | \widetilde{x}_0)} - \log \frac{q_t(x_t | x_0)}{q_t(x_t | \widetilde{x}_0)} - 1 }_{D_{\mathrm{IS}}}
+    \E_{t, x_t} \left[
+    w_t(x_t, x_0) \left[
+    \KL(q_t(\cdot | x_0) \| q_t(\cdot | \widetilde{\x}_0))
+    + \underbrace{\frac{q_t(x_t | x_0)}{q_t(x_t | \widetilde{\x}_0)} - \log \frac{q_t(x_t | x_0)}{q_t(x_t | \widetilde{\x}_0)} - 1 }_{D_{\mathrm{IS}}(q_t(x_t | x_0) \| q_t(x_t | \widetilde{x}_0))}
+    \right]
     \right]
     + C, \\
     \text{where } \
-    w_t(x_t, x_0) = \frac{1}{q_t(x_t | x_0)} x_t^\top \left( (1 - \alpha_t) \boldpi_t' - \frac{\alpha'_t}{\alpha_t} \boldpi_t\right).
+    w_t(x_t, x_0) = \frac{1}{q_t(x_t | x_0)} \x_t^\top \left( (1 - \alpha_t) \boldpi_t' - \frac{\alpha'_t}{\alpha_t} \boldpi_t\right).
     \end{gather}
     $$
-    - If $\boldpi_t = \e_m$, the ELBO reduces to the MDLM loss.
+    - If $\boldpi_t = \e_m$, the ELBO [reduces to the MDLM loss](#gidds-elbo-reduces-to-mdlm).
 
 <!-- 
 可以现场展示一下这个elbo在\pi_t = \e_m的时候和mdlm的loss一样
@@ -939,7 +925,7 @@ ul {
 <!-- 
 we give the fully denoised sample Zt0 to the model and sample the resulting distribution with some temperature τ . Then, of all sampled tokens different from Zt0 , we select the one with the highest model likelihood and commit it. This is repeated until convergence
 
-这个sample的过程还是有点生硬
+为了增加额外的修改的scale过程，他们额外加了一个阶段
 -->
 
 ## GIDD
@@ -974,12 +960,12 @@ This can be problematic since these low/high noise samples provide little to no 
     <img src="images/e73d361a97bb51c18bee05a15422e792002322e40ddc8c182a89cd82ffb15266.png">
 </div>
 
-
 <!-- 
 第一个图：最佳temp，可以略过
 第二个图：可以看到加上uniform noise的模型可以很好的自我修正，同时entropy不怎么下降
     但是没有的话就不太会下降，只会不停下降entropy
 注意这里的ppl是用gemma2-9b
+entropy就是句子在词表的分布entropy
 
 下图也是说明自我修改有很显著的效果提升
 -->
@@ -996,15 +982,70 @@ This can be problematic since these low/high noise samples provide little to no 
 -->
 
 
+## Self Error Correction
+<!-- _class: lead -->
+Generalized Interpolating Discrete Diffusion (GIDD)
+**Edit-based Forward Process in Seed Diffusion**
+
+<!-- footer: ByteDance Seed et al., [alphaxiv](https://www.alphaxiv.org/abs/2508.02193) -->
+
+
+## Edit-based Forward Process in Seed Diffusion
+
+<style scoped>
+ol {
+    margin-top: 0
+}
+p {
+    margin-top: 0
+}
+</style>
+
+- Two-stage curriculum for robust diffusion training.
+    1. Mask-based Forward Process: first 80% diffusion training steps, standard MDLM training.
+    2. Edit-based Forward Process: last 20%, they add an extra edit-based corruption process.
+        - Sample $t$, calculate target #edits as $k_t = \lfloor |\x_0|\cdot \alpha_t\rfloor$
+        - Corrupt $\x_0$ with $k_t$ edits, $\x_t \sim q_{\mathrm{edit}}(\x_t | \x_0)$
+        - Edit operation set (e.g. substitutions, deletions(?), insertion(?))
+
+<!-- 
+这里的operation我实在是没懂insert和deletion是怎么搞的
+-->
+
+
+## Edit-based Forward Process in Seed Diffusion
+
+- Original loss:
+    $$
+    \L =  -\log \widetilde{p}_\theta(\x_0 | \x_0) 
+    + \E_{t, \x_t \sim q_{\text{mask}, t(\cdot | \x_0)}} 
+    \left[
+    \frac{\alpha_t'}{1 - \alpha_t}
+    \sum_{i=1}^{|\x_0|}
+    \delta_{x_t^{(i)}, m} \log \widetilde{p}_{\theta}(x_0^{(i)} | \x_t)
+    \right]
+    $$
+- Substituting the reconstruct loss with a denoised loss based on the edit-based forward process:
+    $$
+    \L =  -\mathbb{E}_{t, \x_t \sim q_{\text{edit}, t}(\cdot | \x_0)} \log \widetilde{p}_\theta(\x_0 | \x_t) 
+    + \E_{t, \x_t \sim q_{\text{mask}, t(\cdot | \x_0)}} 
+    \left[
+    \frac{\alpha_t'}{1 - \alpha_t}
+    \sum_{i=1}^{|\x_0|}
+    \delta_{x_t^{(i)}, m} \log \widetilde{p}_{\theta}(x_0^{(i)} | \x_t)
+    \right]
+    $$
+
+
 ## Dynamic Length Generation
 <!-- _class: lead -->
-Block Diffusion
-DAEDAL (Dynamic Adaptive Length Expansion for dLLMs)
+**Block Diffusion**
+Dynamic Adaptive Length Expansion for dLLMs (DAEDAL)
+
+<!-- footer: Arriola et al., [alphaxiv](https://www.alphaxiv.org/abs/2503.09573) -->
 
 
 ## Block Diffusion
-
-<!-- footer: Arriola et al., [alphaxiv](https://www.alphaxiv.org/abs/2503.09573) -->
 
 - Block diffusion: auto-regressive over blocks; diffusion within blocks
 
@@ -1067,8 +1108,6 @@ DAEDAL (Dynamic Adaptive Length Expansion for dLLMs)
 
 ![w:400](images/e9f2b32002d6bf21f55de47a5491fcd5ebaa4bd96e5b56a063b13d5ff70361fe.png)  
 
-
-
 <!-- 
 mdlm只有在token是mask的时候才计算loss，所以其实即使l'=1，也和ar-llm不一样
 
@@ -1076,9 +1115,15 @@ mdlm只有在token是mask的时候才计算loss，所以其实即使l'=1，也�
 -->
 
 
-## DAEDAL(Dynamic Adaptive Length Expansion for dLLMs)
+## Dynamic Length Generation
+<!-- _class: lead -->
+Block Diffusion
+**Dynamic Adaptive Length Expansion for dLLMs (DAEDAL)**
 
 <!-- footer: Li et al., [alphaxiv](https://www.alphaxiv.org/abs/2508.00819) -->
+
+
+## Dynamic Adaptive Length Expansion for dLLMs (DAEDAL)
 
 - Training-free dynamic length generation
 - Can we predict the length of the generated sequence using the underlying information of the model?
@@ -1091,7 +1136,7 @@ mdlm只有在token是mask的时候才计算loss，所以其实即使l'=1，也�
     <img src="images/5bb0fd0b56591483eecc8a4677951fdc65693e3ee9f442f4ad60f4ccd96ba9c9.png">
 </div>
 
-- The model's confidence in generating an EOS token at the end of the sequence us interpreted as an internal signal of whether the current token length is sufficient
+- The model's confidence in generating an EOS token at the end of the sequence can be interpreted as an internal signal of whether the current token length is sufficient.
 
 
 ## DAEDAL
@@ -1120,12 +1165,15 @@ ul {
 
 # <!-- fit -->Thanks for Watching
 Pingzhi (Stanley) Tang
+M$\mu$ Lab @ PKU
 stanleytang@stu.pku.edu.cn
 <!-- _class: lead -->
 <!-- footer: '' -->
 
 
 ## Data Processing Inequality
+
+<!-- paginate: skip -->
 
 $$
 \begin{aligned}
@@ -1139,3 +1187,47 @@ $$
 $$
 
 [Back](#eb-sampler-2)
+
+
+## GIDD's ELBO Reduces to MDLM
+
+$$
+\begin{gather}
+-\log p(x_0) \leq
+\E_{t, x_t} \left[
+w_t(x_t, x_0) \left[
+\KL(q_t(\cdot | x_0) \| q_t(\cdot | \widetilde{\x}_0))
++ \underbrace{\frac{q_t(x_t | x_0)}{q_t(x_t | \widetilde{\x}_0)} - \log \frac{q_t(x_t | x_0)}{q_t(x_t | \widetilde{\x}_0)} - 1 }_{D_{\mathrm{IS}}(q_t(x_t | x_0) \| q_t(x_t | \widetilde{x}_0))}
+\right]
+\right]
++ C, \\
+\text{where } \
+w_t(x_t, x_0) = \frac{1}{q_t(x_t | x_0)} \x_t^\top \left( (1 - \alpha_t) \boldpi_t' - \frac{\alpha'_t}{\alpha_t} \boldpi_t\right).
+\end{gather}
+$$
+
+- When $\boldpi_t = \e_m$, 
+    $$
+    w_t(x_t, x_0) = -\frac{1}{q_t(x_t | x_0)}\frac{\alpha_t'}{\alpha_t} \x_t^\top \e_m = -\frac{1}{q_t(x_t = m | x_0)}\frac{\alpha_t'}{\alpha_t} \delta_{x_t, m} = -\frac{\alpha_t'}{(1 - \alpha_t)\alpha_t} \delta_{x_t, m}
+    $$
+
+
+## GIDD's ELBO Reduces to MDLM
+
+- Assuming $x_t = m$:
+    $$
+    \begin{aligned}
+    \KL(q_t(\cdot | x_0) \| q_t(\cdot | \widetilde{\x}_0)) + D_{\mathrm{IS}}(q_t(x_t | x_0) \| q_t(x_t | \widetilde{\x}_0)) 
+    &= \sum_x q_t(x | x_0) \log \frac{q_t(x | x_0)}{q_t(x | \widetilde{\x}_0)} + \frac{q_t(m | x_0)}{q_t(m | \widetilde{\x}_0)} - \log\frac{q_t(m | x_0)}{q_t(m | \widetilde{\x}_0)} - 1 \\
+    &= q_t(x_0 | x_0) \log \frac{q_t(x_0 | x_0)}{q_t(x_0 | \widetilde{\x}_0)} \\
+    &= -\alpha_t \x_0^\top \log \widetilde{\x}_0 = -\alpha_t \log \widetilde{p}_\theta(x_0 | x_t)
+    \end{aligned}
+    $$
+- Therefore, the overall ELBO reduces to:
+    $$
+    \E_{t, x_t}
+    \frac{\alpha_t'}{1 - \alpha_t} \delta_{x_t, m} \log \widetilde{p}_\theta(x_0 | x_t)
+    $$
+    which is exactly MDLM loss.
+
+[Back](#gidd)
