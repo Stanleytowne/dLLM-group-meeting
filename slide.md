@@ -1,5 +1,7 @@
 ---
 marp: true
+title: dLM Unchained
+author: Pingzhi (Stanley) Tang
 theme: gaia
 paginate: true
 headingDivider: 2
@@ -52,18 +54,14 @@ style: |
 auther: Pingzhi Tang
 ---
 
-<!-- dLM Unchained: Unleashing Speed, Self-Correction, and Flexibility in Diffusion Language Models -->
 
 <!-- _class: lead -->
 # <!-- fit --><span class="morph" style="--morph-name:dllm;">dLM Unchained</span>
 #### Unleashing Speed, Self-Correction, and Flexibility in Diffusion Language Models.
 
-
-
 Pingzhi (Stanley) Tang
 M$\mu$ Lab @ PKU
 stanleytang@stu.pku.edu.cn
-
 
 $$
 \DeclareMathOperator{\cat}{Cat}
@@ -105,7 +103,6 @@ ul {
 - **<span class="morph" style="--morph-name:dllm;">dLM Unchained</span>**
     - Unleashing Speed, Self-Correction, and Flexibility in Diffusion Language Models.
 
-
 <!-- 
 1. 明确一下为什么大家最近对 dLLM 这么感兴趣，dllm有什么可能的好处
 2. 在mys的基础上复习一下language diffusion的setting
@@ -113,7 +110,6 @@ ul {
 4. 然后我们看看这些模型有什么问题
 5. 最后就是我这次talk的最核心的内容，就是有哪些可能的方法来改进
 -->
-
 
 <!-- footer: '' -->
 
@@ -213,6 +209,7 @@ cat是分类分布，这个分布可以分解为多个one-hot编码的加权和�
 根据q的具体形式，我们可以把kl的式子化简一下；
 对于逆向过程的建模，他们的选择是建模x_t -> x_0
 -->
+
 
 ## MDLM (MD4)
 <style scoped>
@@ -342,7 +339,6 @@ ol {
 }
 </style>
 
-
 3. Mean parameterization in MDLM has be proven to be equivalent to score-based parameterization in SEDD / RADD but the former enforces an additional constraint, leading to more stable training.
     - SEDD models concrete score function: $s(x_t, t)_j \triangleq \frac{q_t(j)}{q_t(x_t)}$.
     - In MD4 paper, they show that:
@@ -401,8 +397,8 @@ Closed-source:
 这里的所有模型都是今年推出的
 最早的llada是今年二月份，然后mercury coder过了两天就发布了，不过他的技术报告在6月才发布
 然后是四月的dream，五月的gemini diffusion, gemini的这个没有任何技术细节，连内测都要填写申请
-
 -->
+
 
 ## <span class="morph" style="--morph-name:llada;">LLaDA</span>
 
@@ -417,6 +413,7 @@ Closed-source:
 llada这个文章没什么好讲的，他就是第一个把dllm scale到8b的模型
 没有什么理论上的创新
 -->
+
 
 ## LLaDA
 
@@ -469,6 +466,7 @@ dream直接用一个qwen来初始化
 去掉causal mask，加上token的位移
 -->
 
+
 ## Dream
 
 - Context-Adaptive Token-Level Noise Rescheduling: measures the contextual informativeness for each token individually and dynamically reassigns appropriate noise levels based on the current context.
@@ -515,6 +513,7 @@ dream直接用一个qwen来初始化
 这里有一些常见的拿来测试dllm的planning能力的任务
 -->
 
+
 ## Dream
 
 - Planning ability of the model
@@ -523,6 +522,7 @@ dream直接用一个qwen来初始化
 <!-- 
 可以发现dream这样一个8b的模型，能比deepseek v3还好，感觉还是非常impressive的
 -->
+
 
 ---
 
@@ -839,7 +839,7 @@ fast-dllm的方法基于：当我们指定decode的顺序是block-wise，prompt�
 
 ## Fast-dLLM
 
-<div class="long-image-scroller" style="width: 100%; height: 30rem;">
+<div class="long-image-scroller" style="width: 100%; height: 30.8rem;">
     <img src="images/844056679e1f35613b9d63d8858be1a32a7db49cb12779b1776ffa09e072509b.png">
 </div>
 
@@ -852,10 +852,11 @@ Edit-based Forward Process in Seed Diffusion
 <!-- footer: Rütte et al., [alphaxiv](https://www.alphaxiv.org/abs/2503.04482) -->
 
 <!-- 
-做self correction，其实最直接的想法就是
-在forward的时候，看模型的confidence，然后把比较低的部分remask
-很多这样做，以及若干改进，lack理论依据
-在这里我们就不提了
+revision基本上可以归为两种做法
+1. applies predictor-corrector samplers without training；不训练，直接用某种设计好的sample方式：例如随机remask一部分，或者假设模型的confidence可以用来估计哪个位置的token是错的，然后remask
+这种方法的问题是他没有理论上能找到错误token的保证，所以会需要额外比较多的sample步数
+这里有一个知名度比较高的文章，但是我感觉他不太有道理，所以我这里就不介绍了，感兴趣的可以去自己看一下，叫Wide-In, Narrow-Out (WINO)
+2. 就是改mdlm的diffusion process了，这也是我今天主要介绍的
 -->
 
 
@@ -1046,6 +1047,7 @@ p {
 <!-- _class: lead -->
 **<span class="morph" style="--morph-name:block-diffusion;">Block Diffusion</span>**
 Dynamic Adaptive Length Expansion for dLLMs (DAEDAL)
+DreamOn
 
 <!-- footer: Arriola et al., [alphaxiv](https://www.alphaxiv.org/abs/2503.09573) -->
 
@@ -1124,6 +1126,7 @@ mdlm只有在token是mask的时候才计算loss，所以其实即使l'=1，也�
 <!-- _class: lead -->
 <span class="morph" style="--morph-name:block-diffusion;">Block Diffusion</span>
 **Dynamic Adaptive Length Expansion for dLLMs (<span class="morph" style="--morph-name:daedal;">DAEDAL</span>)**
+DreamOn
 
 <!-- footer: Li et al., [alphaxiv](https://www.alphaxiv.org/abs/2508.00819) -->
 
@@ -1166,6 +1169,71 @@ ul {
 <div class="long-image-scroller" style="width: 80%; height: 29.5rem;">
     <img src="images/317f2226fbd4eebd97ac8aa31ef41d6cb19e99d10327f91635e4e7311c82fd1a.png">
 </div>
+
+
+## Dynamic Length Generation
+<!-- _class: lead -->
+Block Diffusion
+Dynamic Adaptive Length Expansion for dLLMs (DAEDAL)
+****<span class="morph" style="--morph-name:dreamon;">DreamOn</span>****
+
+<!-- footer: Wu et al., [blog](https://hkunlp.github.io/blog/2025/dreamon/) -->
+
+
+## <span class="morph" style="--morph-name:dreamon;">DreamOn</span>
+
+- Are dLLMs really better at infilling? 
+    - dLLMs require a fixed-size canvas to be specified in advance.
+    - #Tokens are different from #words!
+- DreamOn introduces two special tokens `<|delete|>` and `<|expand|>` to represent the deletion and expansion operations. If a mask is denoised into:
+    - `<|delete|>`: delete the current token
+    - `<|expand|>`: expand the current token into two [MASK]
+
+
+## DreamOn
+
+<style scoped>
+ul {
+    margin-top: 0
+}
+</style>
+
+- Training: fine-tunes DreamCoder-7B with:
+    - Given clean sequence $\x_0$, they construct an auxiliary sequence $\z_0$ by
+        - randomly merging token spans to `<|expand|>` and
+        - inserting a random number of `<|delete|>` tokens
+    - Then train the masked diffusion model on $\z_0$ instead of $\x_0$.
+    
+    ![w:700](https://hkunlp.github.io/assets/img/dreamcoder-infilling-imgs/augmented-diffusion.png)
+
+
+## DreamOn
+
+- Results
+![w:500](images/cf7926811b043510e2684f9725990ef620158c26625e78762bed63a03e069ccc.png)  
+
+
+## DreamOn
+
+- Results
+![w:600](images/1cf0785539f439079c6aae77dd1da7b4a64483d4c209b6c34cc2aadee2f8f3e5.png)  
+
+
+# Table of Contents
+
+<style scoped>
+ul {
+    margin-top: 0
+}
+</style>
+
+- Why dLM?
+    - i.e., what's wrong with autoregressive LLMs and what are the potential benefits of dLLMs?
+- dLM (MDLM) recap
+- State-of-the-art dLLMs: open / closed-source
+- Drawbacks of the current dLLMs(MDLMs)
+- ***dLM Unchained***
+    - Unleashing Speed, Self-Correction, and Flexibility in Diffusion Language Models.
 
 
 # <!-- fit -->Thanks for Watching
