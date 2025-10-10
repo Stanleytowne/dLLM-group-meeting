@@ -610,6 +610,25 @@ ol {
 
 ## Gaps between Open / Closed-source dLLMs
 
+<!-- footer: Yang et al., [alphaxiv](https://www.alphaxiv.org/pdf/2510.06190) -->
+
+<style scoped>
+ol {
+    margin-bottom: 0rem;
+}
+</style>
+
+3. Self error correction: Why bother?
+    - In Chenxiao Yang, Cai Zhou et al.'s work, they show that MDLMs archieve Turing-completeness (just like ar-llms do) and do so more efficiently with optimal parallel time complexity.
+    $$
+    \text{PRAM}(P(n), T(n)) \subset \text{MDM}(\mathcal{O}(P(n) \cdot T(n)), \mathcal{O}(T(n)))
+    $$
+    - With length-variable edit (Any-Process MDLM, unmask + remask + insert + delete), the context length can be reduced to the actual space needed $\mathcal{O}(S(n))$.
+    - Background knowledge: Random Access Machines ([RAMs](#side-notes-random-access-machines-rams))
+
+
+## Gaps between Open / Closed-source dLLMs
+
 <style scoped>
 ol {
     margin-bottom: 0rem;
@@ -714,7 +733,7 @@ eb-sampler文章里提出，这是因为top-k只考虑了单个token的confidenc
 - Our goal: 
     $$\min_\phi\KL(q(x) \| p_{\phi}(x))$$
 
-- According to [**Data Processing Inequality**](#data-processing-inequality), the KL divergence between two marginals is no larger than the joint distributions:
+- According to [**Data Processing Inequality**](#side-notes-data-processing-inequality), the KL divergence between two marginals is no larger than the joint distributions:
     $$\KL(q(x) \| p_{\phi}(x)) \leq \KL(q_{\phi}(x,z) \| p_{\phi}(x,z))$$
     - $z = (z_1, \dots, z_d)$ is an ordered partition of $\mathcal{I} = \{1, \dots, N\}$,
     - $\phi(z_i | x^{z_{<i}}, z_{<i})$ is a sequencing function that determines the unmasking order.
@@ -899,7 +918,7 @@ revision基本上可以归为两种做法
     w_t(x_t, x_0) = \frac{1}{q_t(x_t | x_0)} \x_t^\top \left( (1 - \alpha_t) \boldpi_t' - \frac{\alpha'_t}{\alpha_t} \boldpi_t\right).
     \end{gather}
     $$
-    - If $\boldpi_t = \e_m$, the ELBO [reduces to the MDLM loss](#gidds-elbo-reduces-to-mdlm).
+    - If $\boldpi_t = \e_m$, the ELBO [reduces to the MDLM loss](#side-notes-data-processing-inequality).
 
 <!-- 
 可以现场展示一下这个elbo在\pi_t = \e_m的时候和mdlm的loss一样
@@ -1244,7 +1263,7 @@ stanleytang@stu.pku.edu.cn
 <!-- footer: '' -->
 
 
-## Data Processing Inequality
+## Side Notes: Data Processing Inequality
 
 <!-- paginate: skip -->
 
@@ -1262,7 +1281,7 @@ $$
 [Back](#eb-sampler-2)
 
 
-## GIDD's ELBO Reduces to MDLM
+## Side Notes: GIDD's ELBO Reduces to MDLM
 
 $$
 \begin{gather}
@@ -1285,7 +1304,7 @@ $$
     $$
 
 
-## GIDD's ELBO Reduces to MDLM
+## Side Notes: GIDD's ELBO Reduces to MDLM
 
 - Assuming $x_t = m$:
     $$
@@ -1304,3 +1323,15 @@ $$
     which is exactly MDLM loss.
 
 [Back](#gidd)
+
+
+## Side Notes: Random Access Machines (RAMs)
+
+- RAMs: $\text{RAM}(T(n))$
+    - An abstract model of a single-core computer.
+    - Can be regarded as a CPU with unlimited, random access ($\mathcal{O}(1)$) memory working in time $T(n)$.
+    - Computational equivalent to Turing machines and easier to analyze time / space complexity.
+- PRAMs: $\text{PRAM}(P(n), T(n))$
+    - $P(n)$ processors working in parallel in time $T(n)$.
+
+[Back](#gaps-between-open--closed-source-dllms-4)
