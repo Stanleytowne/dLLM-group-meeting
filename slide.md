@@ -294,7 +294,7 @@ $$
 q(\x_t | \x_s) = \prod_{i=1}^N q(x_t^{(i)} | x_s^{(i)})
 $$
 - As a result, the forward marginals $q(\x_t|\x_0)$ and reversal $q(\x_{t-1} | \x_t, \x_0)$ also factorize.
-- Model defination: $p_{\theta}(\x_s|\x_t) \triangleq \prod_{i=1}^N 
+- [Model defination](#side-notes-md4-model-definition): $p_{\theta}(\x_s|\x_t) \triangleq \prod_{i=1}^N 
 \E_{\x_0 \sim \widetilde{p}_{\theta}(\cdot|\x_t)}
 [q(x_s^{(i)} | x_t^{(i)}, x_0^{(i)})]$
 
@@ -504,7 +504,7 @@ dream直接用一个qwen来初始化
 
 ## Dream
 
-<!-- _footer: Ye et al., [alphaxiv](https://www.alphaxiv.org/html/2508.15487), [back](#why-dlm-1) -->
+<!-- _footer: Ye et al., [alphaxiv](https://www.alphaxiv.org/html/2508.15487), [back](#4) -->
 
 - Planning ability of the model
 ![w:800](images/18973c0eb71c6cb886ebdc0e4be43480892694231914c86d059a160eebd6bb38.png)  
@@ -1335,3 +1335,37 @@ $$
     - $P(n)$ processors working in parallel in time $T(n)$.
 
 [Back](#gaps-between-open--closed-source-dllms-4)
+
+
+## Side Notes: MD4 Model Definition
+
+For absorbing state dLM, we show that the model defination can be rewritten as:
+$$
+p_{\theta}(\x_s|\x_t) \triangleq \prod_{i=1}^N 
+\E_{\x_0 \sim \widetilde{p}_{\theta}(\cdot|\x_t)}
+[q(x_s^{(i)} | x_t^{(i)}, x_0^{(i)})] = 
+\prod_{i=1}^N q(x_s^{(i)} | x_t^{(i)}, \E_{\x_0 \sim \widetilde{p}_{\theta}(\cdot|\x_t)}x_0^{(i)})
+$$
+
+Therefore, we can use a standard BERT to predict the mean of $\x_0$:
+$$
+f_\theta(\x_t) = 
+\E_{\x_0 \sim \widetilde{p}_{\theta}(\cdot|\x_t)} \x_0 \in \R^{N \times V}
+$$
+
+
+## Side Notes: MD4 Model Definition
+
+
+
+Proof: considering the single token case:
+$$
+\begin{aligned}
+\E_{x_0 \sim \widetilde{p}_{\theta}} [q(x_s | x_t, x_0)] &= \sum_{x_0} \widetilde{p}_{\theta}(x_0 | x_t) q(x_s | x_t, x_0) \\
+&= \sum_{x_0} \widetilde{p}_{\theta}(x_0 | x_t) \cdot \x_s^\top \left[\I + \frac{\alpha_s - \alpha_t}{1 - \alpha_t} (\x_0 - \e_m) \e_m^\top\right] \x_t \\
+&= \x_s^\top \left[ \sum_{x_0} \widetilde{p}_{\theta}(x_0 | x_t)  \x_t + \sum_{x_0} \widetilde{p}_{\theta}(x_0 | x_t) \frac{\alpha_s - \alpha_t}{1 - \alpha_t} \x_0 \e_m^\top \x_t - \sum_{x_0} \widetilde{p}_{\theta}(x_0 | x_t) \frac{\alpha_s - \alpha_t}{1 - \alpha_t} \e_m \e_m^\top \x_t \right] \\
+&= \x_s^\top \left[ \I + \frac{\alpha_s - \alpha_t}{1 - \alpha_t} (\E_{x_0 \sim \widetilde{p}_{\theta}}\x_0 - \e_m) \e_m^\top \right] \x_t.
+\end{aligned}
+$$
+*Note: In all formulas, an italic $x$ denotes a category (a scalar), while a bold $\x$ denotes its corresponding one-hot vector representation.*
+[Back](#11)
